@@ -1,6 +1,5 @@
 # P10
 This repo is a case study as part of Openclassrooms' formation. The objective is to learn to deploy an application. Here we deploy the app develop in P8.
-
 # Push app image to DockerHub
 
 ## Build the app loccally
@@ -8,17 +7,27 @@ This repo is a case study as part of Openclassrooms' formation. The objective is
 - Pull the branch deploiement of P8 repo :
 `git pull https://github.com/Nicolasdvl/P8.git deploiement`  
 
-- Create and complete the .env files (cf. P8 repo).
+- Create and complete the .env files [detailed here](#define-env-files)
 
 - Then build the app: 
 `docker-compose -f docker-compose.prod.yml up -d --build`  
-`docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --noinput`  
-`docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput`  
-- Check if the app run correctly by open 'http://localhost:8000' in your browser.
+Migrate and collectstatic commandes are executed automatically  
 
+- Check if the app run correctly by open 'http://localhost/' in your browser.
+
+- Populate the database :
+`docker-compose -f docker-compose.prod.yml exec web python manage.py insert_data`
+
+For more infos about app usage, please check : https://github.com/Nicolasdvl/P8.git
 ## Push the app image
 
-- Create a repo on DockerHub
+- Create a repo on DockerHub : https://hub.docker.com
+
+- Display images :
+`docker images ls`
+
+- Find web app image and rename it to match with your repo:
+`docker image tag <old_name> <user_name>/<repo_name>`
 
 - Connect to DockerHub
 `docker login -u <user_name>`  
@@ -101,7 +110,7 @@ Here we define 3 services :
 
 - Define '.env.prod' file : 
 ```
-DEBUG=False
+DEBUG=0
 DJANGO_KEY=<DJANGO KEY>
 DJANGO_ALLOWED_HOSTS=*
 SQL_ENGINE=django.db.backends.postgresql
@@ -149,10 +158,10 @@ server {
 
 ## Building app
 
+- Build : 
 `docker-compose -f docker-compose.prod.yml up -d --build`  
-`docker-compose -f docker-compose.prod.yml exec web python manage.py migrate --noinput`  
-`docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput`  
-`docker-compose -f docker-compose.prod.yml exec web python manage.py insert_data`
 
 - Check if the app run correctly by open 'http://SERVER_IP' in your browser.
 
+- Populate the database :
+`docker-compose -f docker-compose.prod.yml exec web python manage.py insert_data`
