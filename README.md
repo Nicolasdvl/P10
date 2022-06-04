@@ -122,7 +122,7 @@ SQL_PORT=5432
 DATABASE=postgres
 ```
 
-- Define'.env.db' file : 
+- Define'.env.prod.db' file : 
 ```
 POSTGRES_USER=<USER>
 POSTGRES_PASSWORD=<PASSWORD>
