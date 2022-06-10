@@ -12,6 +12,7 @@ services:
       - ./.env.prod
     depends_on:
       - db
+      - redis
   db:
     image: postgres:13.0-alpine
     volumes:
@@ -27,7 +28,26 @@ services:
       - 80:80
     depends_on:
       - web
-
+  redis:
+    image: redis:alpine
+  celery:
+    image: nicolasdvl/purbeurre:latest
+    command: celery -A config worker -l info
+    volumes:
+      - ./app/:/usr/src/app/
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - redis
+  celery-beat:
+    image: nicolasdvl/purbeurre:latest
+    command: celery -A config beat -l info
+    volumes:
+      - ./app/:/usr/src/app/
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - redis
 volumes:
   postgres_data:
   static_volume:
