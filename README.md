@@ -1,41 +1,5 @@
 # P10
 This repo is a case study as part of Openclassrooms' formation. The objective is to learn to deploy an application. Here we deploy the app develop in P8.
-# Push app image to DockerHub
-
-## Build the app loccally
-
-- Pull the branch deploiement of P8 repo :
-`git pull https://github.com/Nicolasdvl/P8.git deploiement`  
-
-- Create and complete the .env files [detailed here](#define-env-files)
-
-- Then build the app: 
-`docker-compose -f docker-compose.prod.yml up -d --build`  
-Migrate and collectstatic commandes are executed automatically  
-
-- Check if the app run correctly by open 'http://localhost/' in your browser.
-
-- Populate the database :
-`docker-compose -f docker-compose.prod.yml exec web python manage.py insert_data`
-
-For more infos about app usage, please check : https://github.com/Nicolasdvl/P8.git
-## Push the app image
-
-- Create a repo on DockerHub : https://hub.docker.com
-
-- Display images :
-`docker images ls`
-
-- Find web app image and rename it to match with your repo:
-`docker image tag <old_name> <user_name>/<repo_name>`
-
-- Connect to DockerHub
-`docker login -u <user_name>`  
-
-- Push
-`docker push <user_name>/<repo_name>`  
-
-# Deployment
 
 ## Host
 The app is deploy in Scaleway : https://www.scaleway.com/fr/  
@@ -120,6 +84,8 @@ SQL_PASSWORD=<PASSWORD>
 SQL_HOST=db
 SQL_PORT=5432
 DATABASE=postgres
+NRIA_LICENSE_KEY=<NEW RELIC LICENSE KEY>
+SENTRY_DSN=<SENTRY DSN>
 ```
 
 - Define'.env.prod.db' file : 
@@ -155,6 +121,30 @@ server {
     }
 }
 ```
+## Configure NewRelic
+
+- Create 'newrelic-infra-setup' folder  
+`mkdir newrelic-infra-setup`  
+
+- Define 'newrelic-infra-setup/newrelic-infra.dockerfile'
+```
+FROM newrelic/infrastructure:latest
+ADD newrelic-infra.yml /etc/newrelic-infra.yml
+```
+
+- Define 'newrelic-infra-setup/newrelic-infra.yml'
+```
+license_key: NRIA_LICENSE_KEY
+```  
+newrelic.ini is already includ in the app image.
+
+## Celery
+
+A service named celery is used in 'docker-compose.prod.yml' to create a cron task. This task update the database weekly. No configuration is required, it's define in the app image.
+
+## Sentry
+
+Sentry configuration just need your dsn in .env.prod
 
 ## Building app
 
