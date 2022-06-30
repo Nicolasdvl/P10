@@ -35,15 +35,18 @@ version: '3.8'
 services:
   web:
     image: nicolasdvl/purbeurre:latest
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: newrelic-admin run-program gunicorn config.wsgi:application --bind 0.0.0.0:8000 --reload
     volumes:
       - static_volume:/home/app/web/staticfiles
     expose:
       - 8000
+    environment:
+      - NEW_RELIC_CONFIG_FILE=newrelic.ini
     env_file:
       - ./.env.prod
     depends_on:
       - db
+      - redis
   db:
     image: postgres:13.0-alpine
     volumes:
@@ -59,7 +62,42 @@ services:
       - 80:80
     depends_on:
       - web
-
+  redis:
+    image: redis:alpine
+  celery:
+    image: nicolasdvl/purbeurre:latest
+    command: celery -A config worker -l info
+    volumes:
+      - ./app/:/usr/src/app/
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - redis
+  celery-beat:
+    image: nicolasdvl/purbeurre:latest
+    command: celery -A config beat -l info
+    volumes:
+      - ./app/:/usr/src/app/
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - redis
+  agent:
+    container_name: newrelic-infra
+    build:
+      context: ./newrelic-infra-setup
+      dockerfile: newrelic-infra.dockerfile
+    cap_add:
+      - SYS_PTRACE
+    network_mode: host
+    pid: host
+    privileged: true
+    volumes:
+      - "/:/host:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    env_file:
+      - ./.env.prod
+    restart: unless-stopped
 volumes:
   postgres_data:
   static_volume:
